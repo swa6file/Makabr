@@ -27,6 +27,7 @@ namespace ConsoleApp187
                         Console.WriteLine("Введите имя работника");
                         string name = Console.ReadLine();
                         Console.WriteLine("Введите возраст");
+                        Console.WriteLine();
                         int.TryParse(Console.ReadLine(), out int age);
                         Console.WriteLine("Выберите специальность");
                         int.TryParse(Console.ReadLine(), out int spec);
@@ -38,20 +39,13 @@ namespace ConsoleApp187
                         WorkerSpecialization specialization = (WorkerSpecialization)spec;
                         Console.WriteLine("Введите зарплату");
                         int.TryParse(Console.ReadLine(), out int salary);
-                        logic.AddWorker(name, age, salary, specialization);
-
+                        Console.WriteLine(logic.AddWorker(name, age, salary, specialization));
                         break;
                     case 2:
-                        if (logic.Workers.Count != 0)
-                        {
-                            Console.WriteLine("Некого увольнять со стройки )))))))");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Введите id работника");
-                            int.TryParse(Console.ReadLine(), out int id);
-                            logic.DeleteWorker(id);
-                        }
+                        Console.WriteLine("Введите id работника");
+                        int.TryParse(Console.ReadLine(), out int id);
+                        Console.WriteLine(logic.DeleteWorker(id));
+  
                         break;
                     case 3:
                         Console.WriteLine(logic.ReadWorkers());
@@ -64,12 +58,13 @@ namespace ConsoleApp187
                         else
                         {
                             Console.WriteLine("Введите id работника");
-                            int.TryParse(Console.ReadLine(), out int id);
-                            logic.ChangeWorkers(id);
+                            int.TryParse(Console.ReadLine(), out int idd);
+                            Console.WriteLine(logic.ChangeWorkers(idd));
                         }
                         break;
                     case 5:
-                        logic.SortSpeciality();
+                        int.TryParse(Console.ReadLine(), out int spe);
+                        logic.SortSpeciality(spe);
                         break;
                     case 6:
                         logic.FullSalaryOfAll();

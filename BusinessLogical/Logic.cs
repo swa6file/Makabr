@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,21 +11,23 @@ namespace BusinessLogical
     public class Logic
     {
         public List<Worker> Workers = new List<Worker>();
-        public void AddWorker(string name, int age, int salary, WorkerSpecialization specialization)
+        public string AddWorker(string name, int age, int salary, WorkerSpecialization specialization)
         {
             Worker worker = new Worker { Name = name, Age = age, Salary = salary, Speciality= specialization };
             Workers.Add(worker);
+            return $"Добавлен новый рабочий {name}";    
         }
 
-        public void DeleteWorker(int id)
+        public string DeleteWorker(int id)
         {
             if (Workers.Any(w => w.Id == id))
             {
                 Workers.Remove(Workers[id]);
+                return "Работник был уволен";
             }
             else
             {
-
+                return "Нечего удалять";
             }
         }
 
@@ -50,14 +53,43 @@ namespace BusinessLogical
             };
         }
 
-        public void ChangeWorkers(int id)
+        public string ChangeWorkers(int id)
         {
-            
+            try
+            {
+                Workers.SingleOrDefault(w => w.Id == id);
+                Console.WriteLine("Выберите что нужноизменить");
+
+                return "";
+            }
+            catch (Exception ex)
+            {
+                return "Нету";
+            }
         }
 
-        public void SortSpeciality()
+        public void SortSpeciality(int spec)
         {
+            if (spec == 1)
+            {
+                ;
+            }
+            else if (spec == 2)
+            {
+                ;
+            }
+            else if (spec == 3)
+            {
+                ;
+            }
+            else if (spec == 4)
+            {
+                ;
+            }
+            else 
+            {
 
+            }
         }
 
         public void FullSalaryOfAll()
