@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BusinessLogical;
-using Model;
 
 namespace ConsoleApp187
 {
@@ -27,19 +26,12 @@ namespace ConsoleApp187
                         Console.WriteLine("Введите имя работника");
                         string name = Console.ReadLine();
                         Console.WriteLine("Введите возраст");
-                        Console.WriteLine();
                         int.TryParse(Console.ReadLine(), out int age);
-                        Console.WriteLine("Выберите специальность");
-                        int.TryParse(Console.ReadLine(), out int spec);
-
-                        if (!Enum.IsDefined(typeof(WorkerSpecialization), spec))
-                        {
-                            break;
-                        }
-                        WorkerSpecialization specialization = (WorkerSpecialization)spec;
                         Console.WriteLine("Введите зарплату");
                         int.TryParse(Console.ReadLine(), out int salary);
-                        Console.WriteLine(logic.AddWorker(name, age, salary, specialization));
+                        logic.ShowSpecializations();
+                        int.TryParse(Console.ReadLine(), out var value);
+                        Console.WriteLine(logic.AddWorker(name, age, salary, value));
                         break;
                     case 2:
                         Console.WriteLine("Введите id работника");
@@ -51,23 +43,16 @@ namespace ConsoleApp187
                         Console.WriteLine(logic.ReadWorkers());
                         break;
                     case 4:
-                        if (logic.Workers.Count != 0)
-                        {
-                            Console.WriteLine("Отсутствуют сотрудники");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Введите id работника");
-                            int.TryParse(Console.ReadLine(), out int idd);
-                            Console.WriteLine(logic.ChangeWorkers(idd));
-                        }
+                        Console.WriteLine("Введите id работника");
+                        int.TryParse(Console.ReadLine(), out int idd);
+                        logic.ChangeWorkers(idd);
                         break;
                     case 5:
                         int.TryParse(Console.ReadLine(), out int spe);
-                        logic.SortSpeciality(spe);
+                        Console.WriteLine(logic.SortSpeciality(spe));
                         break;
                     case 6:
-                        logic.FullSalaryOfAll();
+                        Console.WriteLine(logic.FullSalaryOfAll());
                         break;
 
                     case 0:

@@ -6,16 +6,21 @@ using System.Threading.Tasks;
 
 namespace Model
 {
-    public enum WorkerSpecialization
+    public enum Specialization
     {
-        Builder = 1,
-        Foreman = 2,
-        Painter = 3,
-        Crane_operator = 4
+        Eletrecian = 1,
+        Painter = 2,
+        CraneOperator = 3,
+        GeneralWorker = 4 
     }
     public class Worker
     {
-        public int Id { get; set; }
+        private static int _nextId = 1;
+        public Worker() 
+        {
+            Id = _nextId++;
+        }
+        public int Id { get; private set; }
 
         public string Name { get; set; }
 
@@ -23,6 +28,7 @@ namespace Model
 
         public int Salary { get; set; }
 
-        public WorkerSpecialization Speciality {get; set; }
+        public Specialization Specialization { get; set; }
+
     }
 }
