@@ -31,7 +31,7 @@ namespace ConsoleApp187
                         int.TryParse(Console.ReadLine(), out int salary);
                         logic.ShowSpecializations();
                         int.TryParse(Console.ReadLine(), out var value);
-                        Console.WriteLine(logic.AddWorker(name, age, salary, value));
+                        Console.WriteLine(logic.AddWorker(name, age, salary, Specialization.Eletrecian));
                         break;
                     case 2:
                         Console.WriteLine("Введите id работника");

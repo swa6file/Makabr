@@ -1,17 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data.OleDb;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Model;
-
 namespace BusinessLogical
 {
+    public enum Specialization
+    {
+        Eletrecian = 1,
+        Painter = 2,
+        CraneOperator = 3,
+        GeneralWorker = 4
+    }
+    public class Worker
+    {
+        private static int _nextId = 1;
+        public Worker()
+        {
+            Id = _nextId++;
+        }
+        public int Id { get; private set; }
+
+        public string Name { get; set; }
+
+        public int Age { get; set; }
+
+        public int Salary { get; set; }
+
+        public Specialization Specialization { get; set; }
+
+    }
     public class Logic
     {
-        public List<Worker> Workers = new List<Worker>();
+        public ObservableCollection<Worker> Workers = new ObservableCollection<Worker>();
 
         public void ShowSpecializations()
         {
@@ -21,27 +45,21 @@ namespace BusinessLogical
             Console.WriteLine("3. Крановщик");
             Console.WriteLine("4. Разнорабочий");
         }
-        public string AddWorker(string name, int age, int salary, int value)
+        public string AddWorker(string name, int age, int salary, Specialization value)
         {
-            if (value < 1 || value > 4)
-            {
-                return "Некорректный ввод специальности";
-            }
-            else
-            {
-                Specialization specialization = (Specialization)value;
-                Worker worker = new Worker { Name = name, Age = age, Salary = salary, Specialization = specialization};
-                Workers.Add(worker);
-                return $"Добавлен новый рабочий {name}";
-            }
+            Specialization specialization = (Specialization)value;
+            Worker worker = new Worker { Name = name, Age = age, Salary = salary, Specialization = specialization};
+            Workers.Add(worker);
+            return $"Добавлен новый рабочий {name}";    
         }
 
         public string DeleteWorker(int id)
         {
-            if (Workers.Any(w => w.Id == id))
+            Worker wrk_del = Workers.FirstOrDefault(w => w.Id == id);
+            if (wrk_del != null)
             {
-                Workers.Remove(Workers[id]);
-                return "Работник был уволен";
+                Workers.Remove(wrk_del);
+                return $"Работник {wrk_del.Name} - {wrk_del.Specialization} был уволен";
             }
             else
             {
