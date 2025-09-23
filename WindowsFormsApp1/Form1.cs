@@ -15,6 +15,9 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace WindowsFormsApp1
 {
+    /// <summary>
+    /// Главная форма приложения для управления работниками стройки
+    /// </summary>
     public partial class Form1 : Form
     {
         Logic logic = new Logic();
@@ -43,6 +46,10 @@ namespace WindowsFormsApp1
         {
             comboSpecializatiion.DataSource = Enum.GetValues(typeof(Specialization));   
         }
+
+        /// <summary>
+        /// Иницилизация элементов формы
+        /// </summary>
         public Form1()
         {
             InitializeComponent();
@@ -77,14 +84,32 @@ namespace WindowsFormsApp1
                 int age = int.Parse(Age.Text);
                 int salary = int.Parse(Salary.Text);
                 Specialization specialization = (Specialization)comboSpecializatiion.SelectedItem;
-                
-                logic.AddWorker(name, age, salary, specialization);
 
-                RefreshListBox();
+                if (!logic.CheckName (name))
+                {
+                    MessageBox.Show("Введено некорректное имя");
+                    textName.Focus();
+                }
+                else if (!logic.CheckAge(age))
+                {
+                    MessageBox.Show("Возраст не подходит\nНужен от 18 до 65");
+                    textName.Focus();
+                }
+                else if (!logic.CheckSalary(salary))
+                {
+                    MessageBox.Show("Запрлата некорректна\nМинимум 25 000 Максимум 1 000 000");
+                    textName.Focus();
+                }
+                else
+                {
+                    logic.AddWorker(name, age, salary, specialization);
 
-                textName.Text = "";
-                Age.Text = "";
-                Salary.Text = "";
+                    RefreshListBox();
+
+                    textName.Text = "";
+                    Age.Text = "";
+                    Salary.Text = "";
+                }
             }
             catch (Exception ex)
             {
@@ -132,7 +157,6 @@ namespace WindowsFormsApp1
         {
             var query = logic.Workers.AsQueryable();
 
-            // фильтры
             
             if (!string.IsNullOrEmpty(name))
             {
@@ -194,7 +218,7 @@ namespace WindowsFormsApp1
             int allsalery = logic.Workers.Sum(w => w.Salary);
             int electricians = logic.Workers.Count(w=> w.Specialization == Specialization.Eletrecian);
             int painters = logic.Workers.Count(w => w.Specialization == Specialization.Painter);
-            int craneOperators = logic.Workers.Count(w => w.Specialization == Specialization.CraneOperator) ;
+            int craneOperators = logic.Workers.Count(w=> w.Specialization == Specialization.CraneOperator) ;
             int generalWorkers = logic.Workers.Count(w => w.Specialization == Specialization.GeneralWorker) ;
         InfoConstruction infoConstruction = new InfoConstruction(allsalery, electricians, painters, craneOperators, generalWorkers);
             infoConstruction.Show();

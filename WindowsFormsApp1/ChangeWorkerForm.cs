@@ -15,8 +15,14 @@ using WindowsFormsApp1;
 
 namespace WindowsFormsApp1
 {
+    /// <summary>
+    /// Форма изменения информации о работнике
+    /// </summary>
     public partial class ChangeWorkerForm : Form
     {
+        /// <summary>
+        /// Модель работника для изменения
+        /// </summary>
         public Worker _worker;
         private void InitializeWorker(Worker worker)
         {
@@ -27,12 +33,19 @@ namespace WindowsFormsApp1
             change_specialization.SelectedItem = worker.Specialization.ToString();
             change_salary.Text = worker.Salary.ToString();
         }
+        /// <summary>
+        /// Инициализирует новый экземпляр формы для изменения данных работника.
+        /// </summary>
+        /// <param name="worker">Работник, данные которого будут изменяться</param>
         public ChangeWorkerForm(Worker worker)
         {
             InitializeComponent();
             _worker = worker;
             InitializeWorker(_worker);
         }
+        /// <summary>
+        /// Событие сообщающие о изменении данных работника
+        /// </summary>
         public event EventHandler Changed;
         private void change_worker2_Click(object sender, EventArgs e)
         {

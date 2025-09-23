@@ -11,8 +11,19 @@ using System.Windows.Forms;
 
 namespace WindowsFormsApp1
 {
+    /// <summary>
+    ///  Форма содержащая главную информацию о стройке.
+    /// </summary>
     public partial class InfoConstruction : Form
     {
+        /// <summary>
+        /// Конструктор подгружающий в форму основные данные о стройке.
+        /// </summary>
+        /// <param name="allsalery">Общая зарплата работников</param>
+        /// <param name="electricians">Кол-во электриков</param>
+        /// <param name="painters">Кол-во Маляров</param>
+        /// <param name="craneOperators">Кол-во Крановщиков</param>
+        /// <param name="generalWorkers">Кол-во Разнорабочих</param>
         public InfoConstruction(int allsalery, int electricians, int painters, int craneOperators, int generalWorkers)
         {
             InitializeComponent();

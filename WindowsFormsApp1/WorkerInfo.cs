@@ -11,8 +11,15 @@ using BusinessLogical;
 
 namespace WindowsFormsApp1
 {
+    /// <summary>
+    /// Форма содержащая информацию о выбранном работнике
+    /// </summary>
     public partial class WorkerInfo : Form
     {
+        /// <summary>
+        /// Иницилизация полей работника
+        /// </summary>
+        /// <param name="worker"> Выбранный работник </param>
         public WorkerInfo(Worker worker)
         {
             InitializeComponent();
