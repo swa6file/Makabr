@@ -22,10 +22,10 @@ namespace WindowsFormsApp1
     {
         Logic logic = new Logic();
 
-
+        public event Func<string, string, string, bool> ValidateWorkerData;
         private void InitializeListBox()
         {
-            workers_list.DataSource = logic.Workers;
+            workers_list.DataSource = logic.ReadWorkers();
             logic.AddWorker("Максим", 19 ,200000, Specialization.CraneOperator);
             logic.AddWorker("Алексей", 25, 45000, Specialization.Eletrecian);
             logic.AddWorker("Дмитрий", 32, 38000, Specialization.Painter);
@@ -54,10 +54,29 @@ namespace WindowsFormsApp1
         {
             InitializeComponent();
             InitializeListBox();
-            InitializeSpecializationComboBox(); 
+            InitializeSpecializationComboBox();
+            ValidateWorkerData += ValidateWorker;
 
         }
-
+        private bool ValidateWorker(string name, string age, string salary)
+        {
+            if (!logic.CheckName(name))
+            {
+                MessageBox.Show("Введено некорректное имя");
+                return false;
+            }
+            else if (!logic.CheckAge(age))
+            {
+                MessageBox.Show("Возраст не подходит\nНужен от 18 до 65");
+                return false;
+            }
+            else if (!logic.CheckSalary(salary))
+            {
+                MessageBox.Show("Запрлата некорректна\nМинимум 25 000 Максимум 1 000 000");
+                return false;
+            }
+            return true;
+        }
         private void Form1_oad(object sender, EventArgs e)
         {
             if (workers_list.SelectedItem != null)
@@ -72,7 +91,7 @@ namespace WindowsFormsApp1
         private void RefreshListBox()
         {
             workers_list.DataSource = null;
-            workers_list.DataSource = logic.Workers;
+            workers_list.DataSource = logic.ReadWorkers();
             workers_list.DisplayMember = "Name";
             workers_list.ValueMember = "Id";
         }
@@ -81,8 +100,8 @@ namespace WindowsFormsApp1
             try
             {
                 string name = textName.Text;
-                int age = int.Parse(Age.Text);
-                int salary = int.Parse(Salary.Text);
+                string age = Age.Text;
+                string salary = Salary.Text;
                 Specialization specialization = (Specialization)comboSpecializatiion.SelectedItem;
 
                 if (!logic.CheckName (name))
@@ -102,7 +121,9 @@ namespace WindowsFormsApp1
                 }
                 else
                 {
-                    logic.AddWorker(name, age, salary, specialization);
+                    int ag = int.Parse(age);
+                    int salar = int.Parse(salary);
+                    logic.AddWorker(name, ag, salar, specialization);
 
                     RefreshListBox();
 
@@ -142,6 +163,7 @@ namespace WindowsFormsApp1
             {
                 ChangeWorkerForm changeWorkerForm = new ChangeWorkerForm((Worker)workers_list.SelectedItem);
                 changeWorkerForm.Show();
+                changeWorkerForm.ValidateData += ValidateWorker;
                 changeWorkerForm.Changed += (s, args) =>
                 {
                     RefreshListBox();
@@ -153,57 +175,21 @@ namespace WindowsFormsApp1
             }
 
         }
-        private void SortedWorkerss(string name, int? sage, int? eage, int? ssalary, int? essalary, Specialization? specialization)
-        {
-            var query = logic.Workers.AsQueryable();
 
-            
-            if (!string.IsNullOrEmpty(name))
-            {
-                query = query.Where(w => w.Name.Contains(name));
-            }
-
-            
-            if (sage.HasValue)  
-            {
-                query = query.Where(w => w.Age >= sage.Value);
-            }
-            if (eage.HasValue)
-            {
-                query = query.Where(w => w.Age <= eage.Value);
-            }
-
-            
-            if (ssalary.HasValue)
-            {
-                query = query.Where(w => w.Salary >= ssalary.Value);
-            }
-            if (essalary.HasValue)
-            {
-                query = query.Where(w => w.Salary <= essalary.Value);
-            }
-
-        
-            if (specialization.HasValue)
-            {
-                query = query.Where(w => w.Specialization == specialization.Value);
-            }
-
-            workers_list.DataSource = null;
-            workers_list.DataSource = query.ToList();
-            workers_list.DisplayMember = "Name";
-            workers_list.ValueMember = "Id";
-        }
         private void SortedWorkers_Click(object sender, EventArgs e)
         {
             SortWorkers sortWorkers = new SortWorkers();
 
             sortWorkers.Sort += (s, args) =>
             {
-                SortedWorkerss(sortWorkers.fname, sortWorkers.sage, sortWorkers.eage,
+                var query = logic.SortedWorkers(sortWorkers.fname, sortWorkers.sage, sortWorkers.eage,
                               sortWorkers.ssalary, sortWorkers.esalary, sortWorkers.spec);
+                workers_list.DataSource = null;
+                workers_list.DataSource = query.ToList();
+                workers_list.DisplayMember = "Name";
+                workers_list.ValueMember = "Id";
             };
-
+          
             sortWorkers.Show();
         }
 
@@ -215,12 +201,8 @@ namespace WindowsFormsApp1
 
         private void InformationAboutConstruction_Click(object sender, EventArgs e)
         {
-            int allsalery = logic.Workers.Sum(w => w.Salary);
-            int electricians = logic.Workers.Count(w=> w.Specialization == Specialization.Eletrecian);
-            int painters = logic.Workers.Count(w => w.Specialization == Specialization.Painter);
-            int craneOperators = logic.Workers.Count(w=> w.Specialization == Specialization.CraneOperator) ;
-            int generalWorkers = logic.Workers.Count(w => w.Specialization == Specialization.GeneralWorker) ;
-        InfoConstruction infoConstruction = new InfoConstruction(allsalery, electricians, painters, craneOperators, generalWorkers);
+            var list = logic.InformationAboutConstruction();
+        InfoConstruction infoConstruction = new InfoConstruction(list[0], list[1], list[2], list[3], list[4]);
             infoConstruction.Show();
         }
 

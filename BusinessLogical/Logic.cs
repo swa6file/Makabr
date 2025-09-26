@@ -7,65 +7,9 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 namespace BusinessLogical
 {
-/// <summary>
-/// Спеацилизицая работников стройки
-/// </summary>
-    public enum Specialization
-    {
-        /// <summary>
-        /// Электрик
-        /// </summary>
-        Eletrecian = 1,
-        /// <summary>
-        /// Маляр
-        /// </summary>
-        Painter = 2,
-        /// <summary>
-        /// Крановщик
-        /// </summary>
-        CraneOperator = 3,
-        /// <summary>
-        /// Разнорабочий
-        /// </summary>
-        GeneralWorker = 4
-    }
-    /// <summary>
-    /// Основная информация о работнике
-    /// </summary>
-    public class Worker
-    {
-        private static int _nextId = 1;
-        /// <summary>
-        /// Конструктор генирирующий авто идентификатор
-        /// </summary>
-        public Worker()
-        {
-            Id = _nextId++;
-        }
-        /// <summary>
-        /// Уникальный идентификатор работника
-        /// </summary>
-        public int Id { get; private set; }
-        /// <summary>
-        /// Имя работника
-        /// </summary>
-        public string Name { get; set; }
-        /// <summary>
-        /// Возраст рабочего
-        /// </summary>
-        public int Age { get; set; }
-        /// <summary>
-        /// Зарплата рабочего
-        /// </summary>
-        public int Salary { get; set; }
-        /// <summary>
-        /// Специализация работника
-        /// </summary>
-        public Specialization Specialization { get; set; }
-
-    }
     /// <summary>
     /// Содержит бизнес логику для управления работниками стройки
     /// </summary>
@@ -126,81 +70,14 @@ namespace BusinessLogical
         /// 1 - Строку с информацией о всех работниках
         /// 2 - Сообщение об отсутствие работников
         /// </returns>
-        public string ReadWorkers()
+        public ObservableCollection<Worker> ReadWorkers()
         {
-            if (Workers.Count != 0)
-            {
-                string lst_wrks = "";
-                foreach (var wrk in Workers)
-                {
-                    lst_wrks += "==================================\n";
-                    lst_wrks += $"ID: {wrk.Id}\n";
-                    lst_wrks += $"Имя: {wrk.Name}\n";
-                    lst_wrks += $"Возраст: {wrk.Age}\n";
-                    lst_wrks += $"Зарплата: {wrk.Salary}\n";
-                    lst_wrks += $"Специализация: {wrk.Specialization}\n";
-                    lst_wrks += "==================================\n\n";
-                }
-                return lst_wrks;
-            }
-            else
-            {
-                return "Никто не работает на стройке";
-            };
+            return Workers;
         }
 
+        
         /// <summary>
-        /// Изменяет работника по идентификатору
-        /// </summary>
-        /// <param name="id">Идентификатор пользователя</param>
-        /// <returns>
-        /// 1 - Информацию о успешном изменении данных работника
-        /// 2 - Информацию о некорректном выборе
-        ///</returns>
-        public string ChangeWorkers(int id)
-        {
-            try
-            {
-                Worker work_choose = Workers.SingleOrDefault(w => w.Id == id);
-                Console.WriteLine("Выберите что нужно изменить:");
-                Console.WriteLine("1. Зарплата");
-                Console.WriteLine("2. Специализацию");
-
-                int.TryParse(Console.ReadLine(), out int chose);
-                if (chose == 1)
-                {
-                    int.TryParse(Console.ReadLine(), out int salar);
-                    while (!CheckSalary(salar))
-                    {
-                        Console.WriteLine("Введите корректную заработную плату");
-                        int.TryParse(Console.ReadLine(), out salar);
-                    }
-                    work_choose.Salary = salar;
-
-                }
-                else if (chose == 2)
-                {
-                    ShowSpecializations();
-                    int.TryParse(Console.ReadLine(), out int special);
-                    while (!CheckSpecialization(special))
-                    {
-                        Console.WriteLine("Выберите правильно специализацию");
-                        ShowSpecializations();
-                        int.TryParse(Console.ReadLine(), out special);
-                    }
-                    Specialization specialization = (Specialization)special;
-                    work_choose.Specialization = specialization;
-                }
-
-                return "Данные были изменены";
-            }
-            catch
-            {
-                return "Выбор был некорректен";
-            }
-        }
-        /// <summary>
-        /// Выводит информацию о работниках конкретной специализации
+        /// Выводит информацию о работниках по фильтру
         /// </summary>
         /// <param name="spec">Специализация рабочих</param>
         /// <returns>
@@ -208,54 +85,57 @@ namespace BusinessLogical
         /// 2 - Информация о отсутствии людей с такой специализацией
         /// 3 - Информацию о некорректном выборе
         /// </returns>
-        public string SortSpeciality(int spec)
+        public IQueryable<Worker> SortedWorkers(string name, int? sage, int? eage, int? ssalary, int? essalary, Specialization? specialization)
         {
-            try
+            var query = Workers.AsQueryable();
+
+
+            if (!string.IsNullOrEmpty(name))
             {
-                Specialization speci = (Specialization)spec;
-                List<Worker> workerss = Workers.Where(w => w.Specialization == speci).ToList();
-                string s = "";
-                if (workerss.Count != 0)
-                {
-                    foreach (Worker worker in workerss)
-                    {
-                        s += "==================================\n";
-                        s += $"ID: {worker.Id}\n";
-                        s += $"Имя: {worker.Name}\n";
-                        s += $"Возраст{worker.Age}\n";
-                        s += $"Зарплата {worker.Salary}\n";
-                        s += $"Специализация {worker.Specialization}\n";
-                        s += "==================================\n\n";
-                    }
-                }
-                else
-                {
-                    s += "Людей с такой специализации нету";
-                }
-                return s;
+                query = query.Where(w => w.Name.Contains(name));
             }
-            catch
+
+
+            if (sage.HasValue)
             {
-                return "Выбор был некорректен";
+                query = query.Where(w => w.Age >= sage.Value);
             }
+            if (eage.HasValue)
+            {
+                query = query.Where(w => w.Age <= eage.Value);
+            }
+
+
+            if (ssalary.HasValue)
+            {
+                query = query.Where(w => w.Salary >= ssalary.Value);
+            }
+            if (essalary.HasValue)
+            {
+                query = query.Where(w => w.Salary <= essalary.Value);
+            }
+
+
+            if (specialization.HasValue)
+            {
+                query = query.Where(w => w.Specialization == specialization.Value);
+            }
+            return query;
         }
 
         /// <summary>
         /// Выводит общую информацию о работниках на стройке
         /// </summary>
-        /// <returns></returns>
-        public string InformationAboutConstruction()
+        /// <returns></returns>       
+        public List<int> InformationAboutConstruction()
         {
-            int allsalery = Workers.Sum(w => w.Salary);
-            int electricians = Workers.Count(w => w.Specialization == Specialization.Eletrecian);
-            int painters = Workers.Count(w => w.Specialization == Specialization.Painter);
-            int craneOperators = Workers.Count(w => w.Specialization == Specialization.CraneOperator);
-            int generalWorkers = Workers.Count(w => w.Specialization == Specialization.GeneralWorker);
-            return $"Общая сумма зарплаты всех работников {allsalery} руб\n" +
-                $"Кол-во Электриков {electricians}" +
-                $"Кол-во Маляров {painters}" +
-                $"Кол-во Крановщиков {craneOperators}" +
-                $"Кол-во Разнорабочих {generalWorkers}";
+            List<int> info = new List<int>();
+            info.Add(Workers.Sum(w => w.Salary));
+            info.Add(Workers.Count(w => w.Specialization == Specialization.Eletrecian));
+            info.Add(Workers.Count(w => w.Specialization == Specialization.Painter));
+            info.Add(Workers.Count(w => w.Specialization == Specialization.CraneOperator));
+            info.Add(Workers.Count(w => w.Specialization == Specialization.GeneralWorker));
+            return info;
         }
 
         /// <summary>
@@ -295,9 +175,10 @@ namespace BusinessLogical
         /// <remarks>
         /// Возраст должен быть от 18 до 65
         /// </remarks>
-        public bool CheckAge(int age)
+        public bool CheckAge(string age)
         {
-            if (age < 18 || age > 65)
+            int.TryParse(age, out int agee);
+            if (agee < 18 || agee > 65)
             {
                 return false;
             }
@@ -317,9 +198,10 @@ namespace BusinessLogical
         ///<remarks>
         /// Зарплата работника должна быть от 25_000 до 1_000_000
         /// </remarks>
-        public bool CheckSalary(int salary)
+        public bool CheckSalary(string salary)
         {
-            if (salary < 25000 || salary > 1000000)
+            int.TryParse(salary, out int ssalary);
+            if (ssalary < 25000 || ssalary > 1000000)
             {
                 return false;
             }
@@ -328,25 +210,7 @@ namespace BusinessLogical
                 return true;
             }
         }
-        /// <summary>
-        /// Проверка cпециализации на существование
-        /// </summary>
-        /// <param name="spec">Специализация работника</param>
-        /// <returns>
-        /// true - специализация существует
-        /// false - такой специализации нет
-        /// </returns>
-        public bool CheckSpecialization(int spec)
-        {
-            if (spec < 1 || spec > 4)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-        }
+   
 
     }
 }

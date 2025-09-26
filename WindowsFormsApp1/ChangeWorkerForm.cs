@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using BusinessLogical;
 using WindowsFormsApp1;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 
 namespace WindowsFormsApp1
@@ -47,6 +48,8 @@ namespace WindowsFormsApp1
         /// Событие сообщающие о изменении данных работника
         /// </summary>
         public event EventHandler Changed;
+        /// Событие проверяющие валидность данных вводимых пользователем
+        public event Func<string, string, string,bool> ValidateData;
         private void change_worker2_Click(object sender, EventArgs e)
         {
             try
@@ -56,6 +59,10 @@ namespace WindowsFormsApp1
                 _worker.Salary = int.Parse(change_salary.Text);
                 _worker.Specialization = (Specialization)change_specialization.SelectedItem;
 
+                if (ValidateData != null && !ValidateData(_worker.Name, _worker.Age.ToString(), _worker.Salary.ToString()))
+                {
+                    return;
+                }
                 Changed?.Invoke(this, EventArgs.Empty);
 
                 MessageBox.Show("Изменения прошли успешно");
@@ -63,9 +70,9 @@ namespace WindowsFormsApp1
                 this.Close();
 
             }
-            catch (Exception ex) 
+            catch (Exception) 
             {
-                MessageBox.Show("Одно из полей содержит некорректное значение " + ex);
+                MessageBox.Show("Одно из полей содержит некорректное значение ");
             }
         }
     }
