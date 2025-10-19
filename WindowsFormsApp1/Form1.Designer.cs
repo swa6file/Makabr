@@ -40,9 +40,10 @@
             this.DeleteSelectedWorker = new System.Windows.Forms.Button();
             this.SortedWorkers = new System.Windows.Forms.Button();
             this.ChangeWorker = new System.Windows.Forms.Button();
-            this.workers_list = new System.Windows.Forms.ListBox();
             this.InformationAboutConstruction = new System.Windows.Forms.Button();
             this.ResetSort = new System.Windows.Forms.Button();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -150,16 +151,6 @@
             this.ChangeWorker.UseVisualStyleBackColor = true;
             this.ChangeWorker.Click += new System.EventHandler(this.ChangeWorker_Click);
             // 
-            // workers_list
-            // 
-            this.workers_list.FormattingEnabled = true;
-            this.workers_list.ItemHeight = 25;
-            this.workers_list.Location = new System.Drawing.Point(593, 26);
-            this.workers_list.Name = "workers_list";
-            this.workers_list.Size = new System.Drawing.Size(880, 529);
-            this.workers_list.TabIndex = 16;
-            this.workers_list.DoubleClick += new System.EventHandler(this.workers_list_DoubleClick);
-            // 
             // InformationAboutConstruction
             // 
             this.InformationAboutConstruction.Location = new System.Drawing.Point(1193, 591);
@@ -180,14 +171,24 @@
             this.ResetSort.UseVisualStyleBackColor = true;
             this.ResetSort.Click += new System.EventHandler(this.ResetSort_Click);
             // 
+            // dataGridView1
+            // 
+            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView1.Location = new System.Drawing.Point(593, 24);
+            this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.RowHeadersWidth = 82;
+            this.dataGridView1.RowTemplate.Height = 33;
+            this.dataGridView1.Size = new System.Drawing.Size(880, 529);
+            this.dataGridView1.TabIndex = 19;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1503, 887);
+            this.ClientSize = new System.Drawing.Size(1552, 887);
+            this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.ResetSort);
             this.Controls.Add(this.InformationAboutConstruction);
-            this.Controls.Add(this.workers_list);
             this.Controls.Add(this.ChangeWorker);
             this.Controls.Add(this.SortedWorkers);
             this.Controls.Add(this.DeleteSelectedWorker);
@@ -202,6 +203,7 @@
             this.Controls.Add(this.label1);
             this.Name = "Form1";
             this.Text = "Стройка";
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -222,8 +224,8 @@
         private System.Windows.Forms.Button SortedWorkers;
         private System.Windows.Forms.Button ChangeWorker;
         private System.Windows.Forms.Button InformationAboutConstruction;
-        public System.Windows.Forms.ListBox workers_list;
         private System.Windows.Forms.Button ResetSort;
+        private System.Windows.Forms.DataGridView dataGridView1;
     }
 }
 

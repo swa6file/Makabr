@@ -66,28 +66,27 @@ namespace ConsoleApp187
                         }
                         int.TryParse(age, out int ag);
                         int.TryParse(salary, out int salar);
+                        Console.Clear();
                         Console.WriteLine(logic.AddWorker(name, ag, salar, (Specialization)val));
                         break;
                     case 2:
                         Console.WriteLine("Введите id работника");
                         int.TryParse(Console.ReadLine(), out int id);
+                        Console.Clear();
                         Console.WriteLine(logic.DeleteWorker(id));
-  
+
                         break;
                     case 3:
+                        Console.Clear();
                         var workers = logic.ReadWorkers();
                         if (workers.Count != 0)
                         {
                             string lst_wrks = "";
+                            lst_wrks += "ID     | Имя      | Возраст | Зарплата | Специализация\n";
+                            lst_wrks += "====================================================\n";
                             foreach (var wrk in workers)
                             {
-                                lst_wrks += "==================================\n";
-                                lst_wrks += $"ID: {wrk.Id}\n";
-                                lst_wrks += $"Имя: {wrk.Name}\n";
-                                lst_wrks += $"Возраст: {wrk.Age}\n";
-                                lst_wrks += $"Зарплата: {wrk.Salary}\n";
-                                lst_wrks += $"Специализация: {wrk.Specialization}\n";
-                                lst_wrks += "==================================\n\n";
+                                lst_wrks += $"{wrk.Id,-6} | {wrk.Name,-8} | {wrk.Age,-7} | {wrk.Salary,-8} | {wrk.Specialization}\n";
                             }
                             Console.WriteLine(lst_wrks);
                         }
@@ -154,9 +153,10 @@ namespace ConsoleApp187
                         worker.Specialization = val == 0 ? worker.Specialization : (Specialization)val;
                         Console.WriteLine("Данные успешно изменены");
 
-
+    
                         break;
                     case 5:
+
                         Console.WriteLine("Введите имя(или нажмите enter для продолжения):");
                         string fname = Console.ReadLine();
                         while (!logic.CheckName(fname))
@@ -224,6 +224,7 @@ namespace ConsoleApp187
                             logic.ShowSpecializations();
                             spec = Console.ReadLine();
                         }
+                        Console.Clear();
                         int? s_age = int.TryParse(start_age.Trim(), out int sage) ? (int?)sage : null;
                         int? e_age = int.TryParse(end_age.Trim(), out int eage) ? (int?)eage : null;
                         int? s_salary = int.TryParse(start_salary.Trim(), out int ssalary) ? (int?)ssalary : null;
@@ -234,39 +235,36 @@ namespace ConsoleApp187
                             specialization = (Specialization)specValue;
                         }
                         var query = logic.SortedWorkers(fname, s_age, e_age,s_salary,e_salary,specialization);
+                        Console.Clear();
                         if (query.ToList().Count != 0)
                         {
                             string lst_wrks = "";
+                            lst_wrks += "ID     | Имя      | Возраст | Зарплата | Специализация\n";
+                            lst_wrks += "====================================================\n";
                             foreach (var wrk in query)
                             {
-                                lst_wrks += "==================================\n";
-                                lst_wrks += $"ID: {wrk.Id}\n";
-                                lst_wrks += $"Имя: {wrk.Name}\n";
-                                lst_wrks += $"Возраст: {wrk.Age}\n";
-                                lst_wrks += $"Зарплата: {wrk.Salary}\n";
-                                lst_wrks += $"Специализация: {wrk.Specialization}\n";
-                                lst_wrks += "==================================\n\n";
+                                lst_wrks += $"{wrk.Id,-6} | {wrk.Name,-8} | {wrk.Age,-7} | {wrk.Salary,-8} | {wrk.Specialization}\n";
                             }
                             Console.WriteLine(lst_wrks);
                         }
                         else
                         {
-                            Console.WriteLine("Никто не работает на стройке");
+                            Console.WriteLine("Таких специалистов нет");
                         };
-
-
 
                         break;
                     case 6:
+                        Console.Clear();
                         var info = logic.InformationAboutConstruction();
                         Console.WriteLine("Общая заработная плата: " + info[0]);
-                        Console.WriteLine("Кол-во Електриков" + info[0]);
-                        Console.WriteLine("Кол-во Маляров"+info[0]);
-                        Console.WriteLine("Кол-во Крановщиков" + info[0]);
-                        Console.WriteLine("Кол-во Разнорабочих" +    info[0]);
+                        Console.WriteLine("Кол-во Електриков: " + info[1]);
+                        Console.WriteLine("Кол-во Маляров: " + info[2]);
+                        Console.WriteLine("Кол-во Крановщиков: " + info[3]);
+                        Console.WriteLine("Кол-во Разнорабочих: " +    info[4]);
                         break;
 
                     case 0:
+                        Console.Clear();
                         Console.WriteLine("The enD");
                         return;
                     default:

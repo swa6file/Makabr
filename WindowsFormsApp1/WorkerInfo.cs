@@ -28,7 +28,6 @@ namespace WindowsFormsApp1
             textBoxAge.Text = worker.Age.ToString();
             textBoxSpec.Text = worker.Specialization.ToString();
             textBoxSalary.Text = worker.Salary.ToString();
-
         }
 
 

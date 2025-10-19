@@ -64,6 +64,13 @@ namespace BusinessLogical
             /// Специализация работника
             /// </summary>
             public Specialization Specialization { get; set; }
-
+        /// <summary>
+        /// Выводит информацию о работнике
+        /// </summary>
+        public string DisplayInfo
+        {
+            get { return $"{Name} - {Age} лет - {Salary} руб. - {Specialization}"; }
         }
+
+    }
 }

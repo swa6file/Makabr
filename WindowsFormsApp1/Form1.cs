@@ -23,10 +23,61 @@ namespace WindowsFormsApp1
         Logic logic = new Logic();
 
         public event Func<string, string, string, bool> ValidateWorkerData;
-        private void InitializeListBox()
+
+        private void InitializeDataGridView()
         {
-            workers_list.DataSource = logic.ReadWorkers();
-            logic.AddWorker("Максим", 19 ,200000, Specialization.CraneOperator);
+            dataGridView1.AutoGenerateColumns = false;
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridView1.ReadOnly = true;
+            dataGridView1.AllowUserToAddRows = false;
+            dataGridView1.RowHeadersVisible = false;
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            dataGridView1.Columns.Clear();
+
+            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "Name",
+                DataPropertyName = "Name",
+                HeaderText = "Имя",
+                Width = 150
+            });
+
+            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "Age",
+                DataPropertyName = "Age",
+                HeaderText = "Возраст",
+                Width = 80,
+                DefaultCellStyle = new DataGridViewCellStyle()
+                {
+                    Alignment = DataGridViewContentAlignment.MiddleRight
+                }
+            });
+
+            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "Salary",
+                DataPropertyName = "Salary",
+                HeaderText = "Зарплата",
+                Width = 120,
+                DefaultCellStyle = new DataGridViewCellStyle()
+                {
+                    Alignment = DataGridViewContentAlignment.MiddleRight,
+                    Format = "N0"
+                }
+            });
+
+            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "Specialization",
+                DataPropertyName = "Specialization",
+                HeaderText = "Специализация",
+                Width = 150
+            });
+
+            // Добавляем тестовые данные
+            logic.AddWorker("Максим", 19, 200000, Specialization.CraneOperator);
             logic.AddWorker("Алексей", 25, 45000, Specialization.Eletrecian);
             logic.AddWorker("Дмитрий", 32, 38000, Specialization.Painter);
             logic.AddWorker("Иван", 28, 52000, Specialization.CraneOperator);
@@ -37,14 +88,14 @@ namespace WindowsFormsApp1
             logic.AddWorker("Ольга", 26, 32000, Specialization.GeneralWorker);
             logic.AddWorker("Мария", 33, 47000, Specialization.Eletrecian);
             logic.AddWorker("Наталья", 27, 39000, Specialization.Painter);
-            workers_list.DisplayMember = "Name";
-            workers_list.ValueMember = "Id";
 
+           
+            RefreshDataGridView();
         }
 
-        private void InitializeSpecializationComboBox() 
+        private void InitializeSpecializationComboBox()
         {
-            comboSpecializatiion.DataSource = Enum.GetValues(typeof(Specialization));   
+            comboSpecializatiion.DataSource = Enum.GetValues(typeof(Specialization));
         }
 
         /// <summary>
@@ -53,11 +104,11 @@ namespace WindowsFormsApp1
         public Form1()
         {
             InitializeComponent();
-            InitializeListBox();
+            InitializeDataGridView();
             InitializeSpecializationComboBox();
             ValidateWorkerData += ValidateWorker;
-
         }
+
         private bool ValidateWorker(string name, string age, string salary)
         {
             if (!logic.CheckName(name))
@@ -77,24 +128,13 @@ namespace WindowsFormsApp1
             }
             return true;
         }
-        private void Form1_oad(object sender, EventArgs e)
-        {
-            if (workers_list.SelectedItem != null)
-            {
 
-                Worker selectedWorker = (Worker)workers_list.SelectedItem;
-
-                WorkerInfo infoForm = new WorkerInfo(selectedWorker);
-                infoForm.ShowDialog();
-            }
-        }
-        private void RefreshListBox()
+        private void RefreshDataGridView()
         {
-            workers_list.DataSource = null;
-            workers_list.DataSource = logic.ReadWorkers();
-            workers_list.DisplayMember = "Name";
-            workers_list.ValueMember = "Id";
+            dataGridView1.DataSource = null;
+            dataGridView1.DataSource = logic.ReadWorkers();
         }
+
         private void Add_Click(object sender, EventArgs e)
         {
             try
@@ -104,7 +144,7 @@ namespace WindowsFormsApp1
                 string salary = Salary.Text;
                 Specialization specialization = (Specialization)comboSpecializatiion.SelectedItem;
 
-                if (!logic.CheckName (name))
+                if (!logic.CheckName(name))
                 {
                     MessageBox.Show("Введено некорректное имя");
                     textName.Focus();
@@ -112,12 +152,12 @@ namespace WindowsFormsApp1
                 else if (!logic.CheckAge(age))
                 {
                     MessageBox.Show("Возраст не подходит\nНужен от 18 до 65");
-                    textName.Focus();
+                    Age.Focus();
                 }
                 else if (!logic.CheckSalary(salary))
                 {
                     MessageBox.Show("Запрлата некорректна\nМинимум 25 000 Максимум 1 000 000");
-                    textName.Focus();
+                    Salary.Focus();
                 }
                 else
                 {
@@ -125,7 +165,7 @@ namespace WindowsFormsApp1
                     int salar = int.Parse(salary);
                     logic.AddWorker(name, ag, salar, specialization);
 
-                    RefreshListBox();
+                    RefreshDataGridView();
 
                     textName.Text = "";
                     Age.Text = "";
@@ -136,44 +176,40 @@ namespace WindowsFormsApp1
             {
                 MessageBox.Show($"Ошибка при добавлении: {ex.Message}");
             }
-
-            ;
-            
-
-
         }
+
         private void DeleteSelectedWorker_Click(object sender, EventArgs e)
         {
-            if (workers_list.SelectedItem == null) 
+            if (dataGridView1.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Сначала нужно выбрать элемент");
+                MessageBox.Show("Сначала нужно выбрать строку");
                 return;
             }
             else
             {
-                Worker selectedwrk = (Worker)workers_list.SelectedItem;
-                MessageBox.Show(logic.DeleteWorker(selectedwrk.Id));
-                RefreshListBox();
-            };
+                Worker selectedWorker = (Worker)dataGridView1.SelectedRows[0].DataBoundItem;
+                MessageBox.Show(logic.DeleteWorker(selectedWorker.Id));
+                RefreshDataGridView();
+            }
         }
 
         private void ChangeWorker_Click(object sender, EventArgs e)
         {
-            if (workers_list.SelectedItem != null)
+            if (dataGridView1.SelectedRows.Count > 0)
             {
-                ChangeWorkerForm changeWorkerForm = new ChangeWorkerForm((Worker)workers_list.SelectedItem);
+                Worker selectedWorker = (Worker)dataGridView1.SelectedRows[0].DataBoundItem;
+                ChangeWorkerForm changeWorkerForm = new ChangeWorkerForm(selectedWorker);
                 changeWorkerForm.Show();
                 changeWorkerForm.ValidateData += ValidateWorker;
                 changeWorkerForm.Changed += (s, args) =>
                 {
-                    RefreshListBox();
+                    RefreshDataGridView();
                 };
             }
             else
             {
-                MessageBox.Show("Для изменения выберите элемент");
+                MessageBox.Show("Для изменения выберите строку");
             }
-
         }
 
         private void SortedWorkers_Click(object sender, EventArgs e)
@@ -184,39 +220,32 @@ namespace WindowsFormsApp1
             {
                 var query = logic.SortedWorkers(sortWorkers.fname, sortWorkers.sage, sortWorkers.eage,
                               sortWorkers.ssalary, sortWorkers.esalary, sortWorkers.spec);
-                workers_list.DataSource = null;
-                workers_list.DataSource = query.ToList();
-                workers_list.DisplayMember = "Name";
-                workers_list.ValueMember = "Id";
+                dataGridView1.DataSource = query.ToList();
             };
-          
+
             sortWorkers.Show();
         }
 
         private void ResetSort_Click(object sender, EventArgs e)
         {
-            RefreshListBox();
-
+            RefreshDataGridView();
         }
 
         private void InformationAboutConstruction_Click(object sender, EventArgs e)
         {
             var list = logic.InformationAboutConstruction();
-        InfoConstruction infoConstruction = new InfoConstruction(list[0], list[1], list[2], list[3], list[4]);
+            InfoConstruction infoConstruction = new InfoConstruction(list[0], list[1], list[2], list[3], list[4]);
             infoConstruction.Show();
         }
 
-        private void workers_list_DoubleClick(object sender, EventArgs e)
+        private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (workers_list.SelectedItem != null)
+            if (e.RowIndex >= 0)
             {
-
-                Worker selectedWorker = (Worker)workers_list.SelectedItem;
-
+                Worker selectedWorker = (Worker)dataGridView1.Rows[e.RowIndex].DataBoundItem;
                 WorkerInfo infoForm = new WorkerInfo(selectedWorker);
                 infoForm.ShowDialog();
             }
         }
     }
-
 }
