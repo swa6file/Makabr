@@ -72,5 +72,12 @@ namespace BusinessLogical
             get { return $"{Name} - {Age} лет - {Salary} руб. - {Specialization}"; }
         }
 
+        interface IDomainObject
+        {
+             int Id { get; set; }
+
+
+        }
+
     }
 }
