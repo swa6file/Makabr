@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using BusinessLogical;
 using static System.Net.Mime.MediaTypeNames;
+using Model;
 
 namespace WindowsFormsApp1
 {
@@ -77,19 +78,6 @@ namespace WindowsFormsApp1
             });
 
             // Добавляем тестовые данные
-            logic.AddWorker("Максим", 19, 200000, Specialization.CraneOperator);
-            logic.AddWorker("Алексей", 25, 45000, Specialization.Eletrecian);
-            logic.AddWorker("Дмитрий", 32, 38000, Specialization.Painter);
-            logic.AddWorker("Иван", 28, 52000, Specialization.CraneOperator);
-            logic.AddWorker("Сергей", 35, 29000, Specialization.GeneralWorker);
-            logic.AddWorker("Андрей", 22, 41000, Specialization.Eletrecian);
-            logic.AddWorker("Анна", 29, 48000, Specialization.Painter);
-            logic.AddWorker("Елена", 31, 55000, Specialization.CraneOperator);
-            logic.AddWorker("Ольга", 26, 32000, Specialization.GeneralWorker);
-            logic.AddWorker("Мария", 33, 47000, Specialization.Eletrecian);
-            logic.AddWorker("Наталья", 27, 39000, Specialization.Painter);
-
-           
             RefreshDataGridView();
         }
 

@@ -8,6 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Model;
+using DataAccessLayer;
+
 namespace BusinessLogical
 {
     /// <summary>
@@ -15,7 +18,35 @@ namespace BusinessLogical
     /// </summary>
     public class Logic
     {
-        public ObservableCollection<Worker> Workers = new ObservableCollection<Worker>();
+        private IRepository<Worker> _repository;
+        private bool _useEntityFramework;
+
+        private const bool USE_ENTITY_FRAMEWORK = false; 
+        /// <summary>
+        /// Метод для включения Entity or Dapper
+        /// </summary>
+        public Logic()
+        {
+            if (USE_ENTITY_FRAMEWORK)
+            {
+                string connectionString = GetDefaultConnectionString();
+                _repository = new EntityRepository<Worker>(connectionString);
+                Console.WriteLine("Используется EntityFramework");
+            }
+            else
+            {
+                string connectionString = GetDefaultConnectionString();
+                _repository = new DapperRepository<Worker>(connectionString);
+                Console.WriteLine("Используется Dapper");
+            }
+        }
+
+        private string GetDefaultConnectionString()
+        {
+            return "Data Source=SOVLE\\SQLEXPRESS;Initial Catalog=master;Integrated Security=True";
+        }
+
+       
 
         /// <summary>
         /// Показывает доступные специализации
@@ -30,131 +61,99 @@ namespace BusinessLogical
         }
 
         /// <summary>
-        /// Создает и добавляет нового работника в коллекцию работников.
+        /// Создает и добавляет нового работника в БД
         /// </summary>
-        /// <param name="name">Имя работника</param>
-        /// <param name="age">Возраст работника</param>
-        /// <param name="salary">Зарплата работника</param>
-        /// <param name="spec">Специализация работника</param>
-        /// <returns>Строку объявляющую о добавлении пользователя</returns>
         public string AddWorker(string name, int age, int salary, Specialization spec)
         {
-            Specialization specialization = (Specialization)spec;
-            Worker worker = new Worker { Name = name, Age = age, Salary = salary, Specialization = specialization };
-            Workers.Add(worker);
+            Worker worker = new Worker { Name = name, Age = age, Salary = salary, Specialization = spec };
+            _repository.Add(worker);
             return $"Добавлен новый рабочий {name}";
         }
+
         /// <summary>
-        /// Удаляет работника по id, из коллекции работников
+        /// Удаляет работника по id из БД
         /// </summary>
-        /// <param name="id">Идентификатор работника</param>
-        /// <returns>Результат  выполнения операции</returns>
         public string DeleteWorker(int id)
         {
-            Worker wrk_del = Workers.FirstOrDefault(w => w.Id == id);
-            if (wrk_del != null)
+            var worker = _repository.ReadById(id);
+            if (worker != null)
             {
-                Workers.Remove(wrk_del);
-                return $"Работник {wrk_del.Name} - {wrk_del.Specialization} был уволен";
+                _repository.Delete(id);
+                return $"Работник {worker.Name} - {worker.Specialization} был уволен";
             }
             else
             {
-                return "Нечего удалять";
+                return "Работник с таким ID не найден";
             }
         }
 
         /// <summary>
-        /// Выдает информацию о работниках на стройке
+        /// Получает всех работников из БД
         /// </summary>
-        /// <returns>
-        /// 1 - Строку с информацией о всех работниках
-        /// 2 - Сообщение об отсутствие работников
-        /// </returns>
-        public ObservableCollection<Worker> ReadWorkers()
+        public List<Worker> ReadWorkers()
         {
-            return Workers;
+            return _repository.ReadAll().ToList();
         }
 
-        
         /// <summary>
-        /// Выводит информацию о работниках по фильтру
+        /// Фильтрует работников по критериям
         /// </summary>
-        /// <param name="spec">Специализация рабочих</param>
-        /// <returns>
-        /// 1 - Информация о людях с такой специализацией
-        /// 2 - Информация о отсутствии людей с такой специализацией
-        /// 3 - Информацию о некорректном выборе
-        /// </returns>
-        public IQueryable<Worker> SortedWorkers(string name, int? sage, int? eage, int? ssalary, int? essalary, Specialization? specialization)
+        public List<Worker> SortedWorkers(string name, int? sage, int? eage, int? ssalary, int? essalary, Specialization? specialization)
         {
-            var query = Workers.AsQueryable();
-
+            var allWorkers = _repository.ReadAll().AsQueryable();
 
             if (!string.IsNullOrEmpty(name))
             {
-                query = query.Where(w => w.Name.Contains(name));
+                allWorkers = allWorkers.Where(w => w.Name.Contains(name));
             }
-
 
             if (sage.HasValue)
             {
-                query = query.Where(w => w.Age >= sage.Value);
+                allWorkers = allWorkers.Where(w => w.Age >= sage.Value);
             }
             if (eage.HasValue)
             {
-                query = query.Where(w => w.Age <= eage.Value);
+                allWorkers = allWorkers.Where(w => w.Age <= eage.Value);
             }
-
 
             if (ssalary.HasValue)
             {
-                query = query.Where(w => w.Salary >= ssalary.Value);
+                allWorkers = allWorkers.Where(w => w.Salary >= ssalary.Value);
             }
             if (essalary.HasValue)
             {
-                query = query.Where(w => w.Salary <= essalary.Value);
+                allWorkers = allWorkers.Where(w => w.Salary <= essalary.Value);
             }
-
 
             if (specialization.HasValue)
             {
-                query = query.Where(w => w.Specialization == specialization.Value);
+                allWorkers = allWorkers.Where(w => w.Specialization == specialization.Value);
             }
-            return query;
+
+            return allWorkers.ToList();
         }
 
         /// <summary>
         /// Выводит общую информацию о работниках на стройке
         /// </summary>
-        /// <returns></returns>       
         public List<int> InformationAboutConstruction()
         {
+            var workers = _repository.ReadAll();
+
             List<int> info = new List<int>();
-            info.Add(Workers.Sum(w => w.Salary));
-            info.Add(Workers.Count(w => w.Specialization == Specialization.Eletrecian));
-            info.Add(Workers.Count(w => w.Specialization == Specialization.Painter));
-            info.Add(Workers.Count(w => w.Specialization == Specialization.CraneOperator));
-            info.Add(Workers.Count(w => w.Specialization == Specialization.GeneralWorker));
+            info.Add(workers.Sum(w => w.Salary));
+            info.Add(workers.Count(w => w.Specialization == Specialization.Eletrecian));
+            info.Add(workers.Count(w => w.Specialization == Specialization.Painter));
+            info.Add(workers.Count(w => w.Specialization == Specialization.CraneOperator));
+            info.Add(workers.Count(w => w.Specialization == Specialization.GeneralWorker));
             return info;
         }
 
-        /// <summary>
-        /// Проверка валидности имени работника
-        /// </summary>
-        /// <param name="name">Имя работника</param>
-        /// <returns>
-        /// true - если имя прошло валидацию
-        /// false - если не прошло валидацию
-        /// </returns>
-        /// <remarks>
-        /// Запрещенные символы: !@#$%&*()_+=[]{}|\/&lt;&gt;?;:"'№
-        /// </remarks>
         public bool CheckName(string name)
         {
             char[] forbiddenChars = { '!', '@', '#', '$', '%', '&', '*', '(', ')',
                              '_', '+', '=', '[', ']', '{', '}', '|', '\\',
-                             '/', '<', '>', '?', ';', ':', '"', '\'','№' }
-            ;
+                             '/', '<', '>', '?', ';', ':', '"', '\'','№' };
             if (forbiddenChars.Any(w => name.Contains(w)) || name.Any(char.IsDigit))
             {
                 return false;
@@ -164,17 +163,7 @@ namespace BusinessLogical
                 return true;
             }
         }
-        /// <summary>
-        /// Проверка возраста работника
-        /// </summary>
-        /// <param name="age">Возраст работника</param>
-        /// <returns>
-        /// true - если возраст работника подходит
-        /// false - если не подходит
-        /// </returns>
-        /// <remarks>
-        /// Возраст должен быть от 18 до 65
-        /// </remarks>
+
         public bool CheckAge(string age)
         {
             int.TryParse(age, out int agee);
@@ -187,17 +176,7 @@ namespace BusinessLogical
                 return true;
             }
         }
-        /// <summary>
-        /// Проверка на валидность зарплаты
-        /// </summary>
-        /// <param name="salary">Зарплата работника</param>
-        /// <returns>
-        /// true - если зарплата прошла валидацию
-        /// false - если нет
-        /// </returns>
-        ///<remarks>
-        /// Зарплата работника должна быть от 25_000 до 1_000_000
-        /// </remarks>
+
         public bool CheckSalary(string salary)
         {
             int.TryParse(salary, out int ssalary);
@@ -210,7 +189,5 @@ namespace BusinessLogical
                 return true;
             }
         }
-   
-
     }
 }

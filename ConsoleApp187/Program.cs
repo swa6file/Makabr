@@ -5,6 +5,7 @@ using System.Net.Configuration;
 using System.Text;
 using System.Threading.Tasks;
 using BusinessLogical;
+using Model;
 
 namespace ConsoleApp187
 {
@@ -15,16 +16,7 @@ namespace ConsoleApp187
         {
             Logic logic = new Logic();
             Console.WriteLine("Welcome to the construction site.");
-            logic.AddWorker("Алексей", 25, 45000, Specialization.Eletrecian);
-            logic.AddWorker("Дмитрий", 32, 38000, Specialization.Painter);
-            logic.AddWorker("Иван", 28, 52000, Specialization.CraneOperator);
-            logic.AddWorker("Сергей", 35, 29000, Specialization.GeneralWorker);
-            logic.AddWorker("Андрей", 22, 41000, Specialization.Eletrecian);
-            logic.AddWorker("Анна", 29, 48000, Specialization.Painter);
-            logic.AddWorker("Елена", 31, 55000, Specialization.CraneOperator);
-            logic.AddWorker("Ольга", 26, 32000, Specialization.GeneralWorker);
-            logic.AddWorker("Мария", 33, 47000, Specialization.Eletrecian);
-            logic.AddWorker("Наталья", 27, 39000, Specialization.Painter);
+
 
             while (true) {
                 Console.WriteLine("Меню:");
@@ -98,7 +90,7 @@ namespace ConsoleApp187
                     case 4:
                         Console.WriteLine("Введите id работника");
                         int.TryParse(Console.ReadLine(), out int idd);
-                        var worker = logic.Workers.FirstOrDefault(w => w.Id == idd);
+                        var worker = logic.ReadWorkers().FirstOrDefault(w => w.Id == idd);
                         Console.WriteLine("Введите имя работника (чтобы оставить прежнее нажмите enter)");
                         name = Console.ReadLine();
                         while (!logic.CheckName(name))

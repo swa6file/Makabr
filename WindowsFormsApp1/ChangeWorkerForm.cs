@@ -12,6 +12,7 @@ using System.Xml.Linq;
 using BusinessLogical;
 using WindowsFormsApp1;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using Model;
 
 
 namespace WindowsFormsApp1

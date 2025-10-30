@@ -6,14 +6,12 @@ using System.Threading.Tasks;
 
 namespace DataAccessLayer
 {
-    interface IRepository<T>
+    public interface IRepository<T> where T : class
     {
-        void Add(T item);
-
-        void Delete(T item);
+        void Add(T entity);
+        void Delete(int id);
         IEnumerable<T> ReadAll();
-        T ReadByld(T repository);
-        void Update(T item);
-            
+        T ReadById(int id);
+        void Update(T entity);
     }
 }
