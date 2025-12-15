@@ -1,29 +1,48 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Net.Configuration;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using BusinessLogical;
-using static System.Net.Mime.MediaTypeNames;
 using Model;
+using Shared;
+using BusinessLogical.Models;
 
 namespace WindowsFormsApp1
 {
-    /// <summary>
-    /// Главная форма приложения для управления работниками стройки
-    /// </summary>
-    public partial class Form1 : Form
+    public partial class Form1 : Form, IView
     {
-        Logic logic = new Logic();
+        // Реализация событий IView
+        public event EventHandler ViewLoaded;
+        public event EventHandler AddWorkerRequested;
+        public event EventHandler<int> DeleteWorkerRequested;
+        public event EventHandler<int> ShowWorkerDetailsRequested;
+        public event EventHandler GetConstructionInfoRequested;
+        public event EventHandler UpdateWorkerRequested;
+        public event EventHandler FilterWorkersRequested;
 
-        public event Func<string, string, string, bool> ValidateWorkerData;
+        private int? _selectedWorkerId;
+
+        public Form1()
+        {
+            InitializeComponent();
+            InitializeForm();
+
+            // Генерируем событие загрузки формы
+            this.Load += (s, e) => ViewLoaded?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void InitializeForm()
+        {
+            InitializeDataGridView();
+            InitializeSpecializationComboBox();
+
+            // Подписываем кнопки на вызов событий (но оставляем старые обработчики для обратной совместимости)
+            Add.Click += Add_Click;
+            DeleteSelectedWorker.Click += DeleteSelectedWorker_Click;
+            ChangeWorker.Click += ChangeWorker_Click;
+            SortedWorkers.Click += SortedWorkers_Click;
+            ResetSort.Click += ResetSort_Click;
+            InformationAboutConstruction.Click += InformationAboutConstruction_Click;
+        }
 
         private void InitializeDataGridView()
         {
@@ -36,9 +55,19 @@ namespace WindowsFormsApp1
 
             dataGridView1.Columns.Clear();
 
+            // Колонки
             dataGridView1.Columns.Add(new DataGridViewTextBoxColumn()
             {
-                Name = "Name",
+                Name = "colId",
+                DataPropertyName = "Id",
+                HeaderText = "ID",
+                Width = 50,
+                Visible = false
+            });
+
+            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn()
+            {
+                Name = "colName",
                 DataPropertyName = "Name",
                 HeaderText = "Имя",
                 Width = 150
@@ -46,7 +75,7 @@ namespace WindowsFormsApp1
 
             dataGridView1.Columns.Add(new DataGridViewTextBoxColumn()
             {
-                Name = "Age",
+                Name = "colAge",
                 DataPropertyName = "Age",
                 HeaderText = "Возраст",
                 Width = 80,
@@ -58,7 +87,7 @@ namespace WindowsFormsApp1
 
             dataGridView1.Columns.Add(new DataGridViewTextBoxColumn()
             {
-                Name = "Salary",
+                Name = "colSalary",
                 DataPropertyName = "Salary",
                 HeaderText = "Зарплата",
                 Width = 120,
@@ -71,169 +100,233 @@ namespace WindowsFormsApp1
 
             dataGridView1.Columns.Add(new DataGridViewTextBoxColumn()
             {
-                Name = "Specialization",
+                Name = "colSpecialization",
                 DataPropertyName = "Specialization",
                 HeaderText = "Специализация",
                 Width = 150
             });
 
-            // Добавляем тестовые данные
-            RefreshDataGridView();
+            // Выбор строки
+            dataGridView1.SelectionChanged += (s, e) =>
+            {
+                if (dataGridView1.CurrentRow?.DataBoundItem != null)
+                {
+                    var worker = dataGridView1.CurrentRow.DataBoundItem as Worker;
+                    if (worker != null)
+                    {
+                        _selectedWorkerId = worker.Id;
+                    }
+                }
+            };
+
+            // Двойной клик
+            dataGridView1.CellDoubleClick += dataGridView1_CellDoubleClick;
         }
 
         private void InitializeSpecializationComboBox()
         {
             comboSpecializatiion.DataSource = Enum.GetValues(typeof(Specialization));
+            comboSpecializatiion.DropDownStyle = ComboBoxStyle.DropDownList;
         }
 
-        /// <summary>
-        /// Иницилизация элементов формы
-        /// </summary>
-        public Form1()
-        {
-            InitializeComponent();
-            InitializeDataGridView();
-            InitializeSpecializationComboBox();
-            ValidateWorkerData += ValidateWorker;
-        }
-
-        private bool ValidateWorker(string name, string age, string salary)
-        {
-            if (!logic.CheckName(name))
-            {
-                MessageBox.Show("Введено некорректное имя");
-                return false;
-            }
-            else if (!logic.CheckAge(age))
-            {
-                MessageBox.Show("Возраст не подходит\nНужен от 18 до 65");
-                return false;
-            }
-            else if (!logic.CheckSalary(salary))
-            {
-                MessageBox.Show("Запрлата некорректна\nМинимум 25 000 Максимум 1 000 000");
-                return false;
-            }
-            return true;
-        }
-
-        private void RefreshDataGridView()
-        {
-            dataGridView1.DataSource = null;
-            dataGridView1.DataSource = logic.ReadWorkers();
-        }
+        // ============ Старые обработчики (для обратной совместимости) ============
 
         private void Add_Click(object sender, EventArgs e)
         {
-            try
-            {
-                string name = textName.Text;
-                string age = Age.Text;
-                string salary = Salary.Text;
-                Specialization specialization = (Specialization)comboSpecializatiion.SelectedItem;
-
-                if (!logic.CheckName(name))
-                {
-                    MessageBox.Show("Введено некорректное имя");
-                    textName.Focus();
-                }
-                else if (!logic.CheckAge(age))
-                {
-                    MessageBox.Show("Возраст не подходит\nНужен от 18 до 65");
-                    Age.Focus();
-                }
-                else if (!logic.CheckSalary(salary))
-                {
-                    MessageBox.Show("Запрлата некорректна\nМинимум 25 000 Максимум 1 000 000");
-                    Salary.Focus();
-                }
-                else
-                {
-                    int ag = int.Parse(age);
-                    int salar = int.Parse(salary);
-                    logic.AddWorker(name, ag, salar, specialization);
-
-                    RefreshDataGridView();
-
-                    textName.Text = "";
-                    Age.Text = "";
-                    Salary.Text = "";
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка при добавлении: {ex.Message}");
-            }
+            // Вызываем событие для Presenter
+            AddWorkerRequested?.Invoke(this, EventArgs.Empty);
         }
 
         private void DeleteSelectedWorker_Click(object sender, EventArgs e)
         {
-            if (dataGridView1.SelectedRows.Count == 0)
+            if (_selectedWorkerId.HasValue)
             {
-                MessageBox.Show("Сначала нужно выбрать строку");
-                return;
+                // Вызываем событие для Presenter
+                DeleteWorkerRequested?.Invoke(this, _selectedWorkerId.Value);
             }
             else
             {
-                Worker selectedWorker = (Worker)dataGridView1.SelectedRows[0].DataBoundItem;
-                MessageBox.Show(logic.DeleteWorker(selectedWorker.Id));
-                RefreshDataGridView();
+                DisplayMessage("Выберите работника для удаления", MessageType.Warning);
             }
         }
 
         private void ChangeWorker_Click(object sender, EventArgs e)
         {
-            if (dataGridView1.SelectedRows.Count > 0)
-            {
-                Worker selectedWorker = (Worker)dataGridView1.SelectedRows[0].DataBoundItem;
-                ChangeWorkerForm changeWorkerForm = new ChangeWorkerForm(selectedWorker);
-                changeWorkerForm.Show();
-                changeWorkerForm.ValidateData += ValidateWorker;
-                changeWorkerForm.Changed += (s, args) =>
-                {
-                    RefreshDataGridView();
-                };
-            }
-            else
-            {
-                MessageBox.Show("Для изменения выберите строку");
-            }
+            // Вызываем событие для Presenter
+            UpdateWorkerRequested?.Invoke(this, EventArgs.Empty);
         }
 
         private void SortedWorkers_Click(object sender, EventArgs e)
         {
-            SortWorkers sortWorkers = new SortWorkers();
-
-            sortWorkers.Sort += (s, args) =>
-            {
-                var query = logic.SortedWorkers(sortWorkers.fname, sortWorkers.sage, sortWorkers.eage,
-                              sortWorkers.ssalary, sortWorkers.esalary, sortWorkers.spec);
-                dataGridView1.DataSource = query.ToList();
-            };
-
-            sortWorkers.Show();
+            // Вызываем событие для Presenter
+            FilterWorkersRequested?.Invoke(this, EventArgs.Empty);
         }
 
         private void ResetSort_Click(object sender, EventArgs e)
         {
-            RefreshDataGridView();
+            // Вызываем событие загрузки для Presenter
+            ViewLoaded?.Invoke(this, EventArgs.Empty);
         }
 
         private void InformationAboutConstruction_Click(object sender, EventArgs e)
         {
-            var list = logic.InformationAboutConstruction();
-            InfoConstruction infoConstruction = new InfoConstruction(list[0], list[1], list[2], list[3], list[4]);
-            infoConstruction.Show();
+            // Вызываем событие для Presenter
+            GetConstructionInfoRequested?.Invoke(this, EventArgs.Empty);
         }
 
         private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
             {
-                Worker selectedWorker = (Worker)dataGridView1.Rows[e.RowIndex].DataBoundItem;
-                WorkerInfo infoForm = new WorkerInfo(selectedWorker);
-                infoForm.ShowDialog();
+                var worker = dataGridView1.Rows[e.RowIndex].DataBoundItem as Worker;
+                if (worker != null)
+                {
+                    // Вызываем событие для Presenter
+                    ShowWorkerDetailsRequested?.Invoke(this, worker.Id);
+                }
             }
+        }
+
+        // ============ Реализация IView ============
+
+        public string GetWorkerName() => textName.Text;
+
+        public int? GetWorkerAge()
+        {
+            return int.TryParse(Age.Text, out int age) ? age : (int?)null;
+        }
+
+        public decimal? GetWorkerSalary()
+        {
+            return decimal.TryParse(Salary.Text, out decimal salary) ? salary : (decimal?)null;
+        }
+
+        public string GetWorkerSpecialization() => comboSpecializatiion.SelectedItem?.ToString();
+
+        public int? GetSelectedWorkerId() => _selectedWorkerId;
+
+        public object GetFilterCriteria()
+        {
+            // Для фильтрации можно открыть форму сортировки или вернуть null
+            return null;
+        }
+
+        public void DisplayWorkers(IEnumerable<object> workers)
+        {
+            var workerList = workers.OfType<Worker>().ToList();
+            dataGridView1.DataSource = workerList;
+        }
+
+        public void DisplayMessage(string message, MessageType type)
+        {
+            MessageBoxIcon icon;
+
+            switch (type)
+            {
+                case MessageType.Success:
+                    icon = MessageBoxIcon.Information;
+                    break;
+                case MessageType.Error:
+                    icon = MessageBoxIcon.Error;
+                    break;
+                case MessageType.Warning:
+                    icon = MessageBoxIcon.Warning;
+                    break;
+                case MessageType.Info:
+                    icon = MessageBoxIcon.Information;
+                    break;
+                default:
+                    icon = MessageBoxIcon.None;
+                    break;
+            }
+
+            MessageBox.Show(message, type.ToString(), MessageBoxButtons.OK, icon);
+        }
+
+        public void DisplayConstructionInfo(object info)
+        {
+            if (info is ConstructionInfo constructionInfo)
+            {
+                var infoForm = new InfoConstruction(
+                    constructionInfo.TotalSalaryExpenses,
+                    constructionInfo.ElectriciansCount,
+                    constructionInfo.PaintersCount,
+                    constructionInfo.CraneOperatorsCount,
+                    constructionInfo.GeneralWorkersCount);
+                infoForm.Show();
+            }
+        }
+
+        public void LoadSpecializations(string[] specializations)
+        {
+            if (specializations != null && specializations.Length > 0)
+                comboSpecializatiion.DataSource = specializations;
+        }
+
+        public void ClearInputFields()
+        {
+            textName.Text = "";
+            Age.Text = "";
+            Salary.Text = "";
+            if (comboSpecializatiion.Items.Count > 0)
+                comboSpecializatiion.SelectedIndex = 0;
+            _selectedWorkerId = null;
+        }
+
+        public void SetWorkerDataForEdit(object workerData)
+        {
+            try
+            {
+                var type = workerData.GetType();
+
+                var nameProp = type.GetProperty("Name");
+                if (nameProp != null)
+                    textName.Text = nameProp.GetValue(workerData)?.ToString();
+
+                var ageProp = type.GetProperty("Age");
+                if (ageProp != null)
+                    Age.Text = ageProp.GetValue(workerData)?.ToString();
+
+                var salaryProp = type.GetProperty("Salary");
+                if (salaryProp != null)
+                    Salary.Text = salaryProp.GetValue(workerData)?.ToString();
+
+                var specProp = type.GetProperty("Specialization");
+                if (specProp != null)
+                {
+                    string specValue = specProp.GetValue(workerData)?.ToString();
+                    if (!string.IsNullOrEmpty(specValue))
+                    {
+                        for (int i = 0; i < comboSpecializatiion.Items.Count; i++)
+                        {
+                            if (comboSpecializatiion.Items[i].ToString() == specValue)
+                            {
+                                comboSpecializatiion.SelectedIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                var idProp = type.GetProperty("Id");
+                if (idProp != null)
+                    _selectedWorkerId = Convert.ToInt32(idProp.GetValue(workerData));
+            }
+            catch (Exception ex)
+            {
+                DisplayMessage($"Ошибка: {ex.Message}", MessageType.Error);
+            }
+        }
+
+        // Класс DTO для фильтрации (нужен для GetFilterCriteria)
+        public class FilterDto
+        {
+            public string Name { get; set; } = "";
+            public int? MinAge { get; set; }
+            public int? MaxAge { get; set; }
+            public decimal? MinSalary { get; set; }
+            public decimal? MaxSalary { get; set; }
+            public string Specialization { get; set; } = "";
         }
     }
 }

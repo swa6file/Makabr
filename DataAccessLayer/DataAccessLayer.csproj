@@ -64,7 +64,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppDbContext.cs" />
-    <Compile Include="Configuration.cs" />
     <Compile Include="DapperRepository.cs" />
     <Compile Include="EntityRepository.cs" />
     <Compile Include="IRepository.cs" />

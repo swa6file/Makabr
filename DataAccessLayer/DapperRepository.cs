@@ -20,10 +20,10 @@ namespace DataAccessLayer
         /// </summary>
         /// <param name="connectionString">Строка подключения к базе данных</param>
         /// <param name="tableName">Название таблицы (если не указано, будет использовано имя типа + 's')</param>
-        public DapperRepository(string connectionString, string tableName = null)
+        public DapperRepository(string connectionString)
         {
             _connectionString = connectionString;
-            _tableName = tableName ?? typeof(T).Name + "s"; // Например: Worker -> Workers
+            _tableName = "Workers"; 
         }
 
         /// <summary>

@@ -1,80 +1,145 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml.Linq;
-using BusinessLogical;
-using WindowsFormsApp1;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using Model;
-
 
 namespace WindowsFormsApp1
 {
-    /// <summary>
-    /// Форма изменения информации о работнике
-    /// </summary>
     public partial class ChangeWorkerForm : Form
     {
-        /// <summary>
-        /// Модель работника для изменения
-        /// </summary>
-        public Worker _worker;
-        private void InitializeWorker(Worker worker)
-        {
-            change_specialization.DataSource = Enum.GetValues(typeof(Specialization)); 
+        public Worker UpdatedWorker { get; private set; }
 
-            change_name.Text = worker.Name;
-            change_age.Text = worker.Age.ToString();
-            change_specialization.SelectedItem = worker.Specialization.ToString();
-            change_salary.Text = worker.Salary.ToString();
-        }
-        /// <summary>
-        /// Инициализирует новый экземпляр формы для изменения данных работника.
-        /// </summary>
-        /// <param name="worker">Работник, данные которого будут изменяться</param>
+        // ДОБАВЬТЕ ЭТИ СОБЫТИЯ
+        public event Action<object, EventArgs> Changed;
+        public event Func<string, string, string, bool> ValidateData;
+
         public ChangeWorkerForm(Worker worker)
         {
             InitializeComponent();
-            _worker = worker;
-            InitializeWorker(_worker);
+            InitializeForm(worker);
         }
-        /// <summary>
-        /// Событие сообщающие о изменении данных работника
-        /// </summary>
-        public event EventHandler Changed;
-        /// Событие проверяющие валидность данных вводимых пользователем
-        public event Func<string, string, string,bool> ValidateData;
+
+        private void InitializeForm(Worker worker)
+        {
+            // Заполняем поля данными работника
+            change_name.Text = worker.Name;
+            change_age.Text = worker.Age.ToString();
+            change_salary.Text = worker.Salary.ToString();
+
+            // Заполняем ComboBox специализациями из Model.Specialization
+            change_specialization.DataSource = Enum.GetValues(typeof(Model.Specialization));
+            change_specialization.SelectedItem = worker.Specialization;
+        }
+
         private void change_worker2_Click(object sender, EventArgs e)
         {
+            // Простая валидация ввода
+            if (!ValidateInput())
+            {
+                MessageBox.Show("Пожалуйста, проверьте введенные данные.", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
-                _worker.Name = change_name.Text;
-                _worker.Age = int.Parse(change_age.Text);
-                _worker.Salary = int.Parse(change_salary.Text);
-                _worker.Specialization = (Specialization)change_specialization.SelectedItem;
+                // ЯВНОЕ приведение типа к Model.Specialization
+                Model.Specialization specialization;
 
-                if (ValidateData != null && !ValidateData(_worker.Name, _worker.Age.ToString(), _worker.Salary.ToString()))
+                if (change_specialization.SelectedItem is Model.Specialization)
                 {
-                    return;
+                    specialization = (Model.Specialization)change_specialization.SelectedItem;
                 }
+                else if (change_specialization.SelectedItem is int intValue)
+                {
+                    // Если это int (значение enum)
+                    specialization = (Model.Specialization)intValue;
+                }
+                else if (change_specialization.SelectedItem is string stringValue)
+                {
+                    // Если это строка
+                    if (Enum.TryParse<Model.Specialization>(stringValue, true, out Model.Specialization parsed))
+                    {
+                        specialization = parsed;
+                    }
+                    else
+                    {
+                        throw new InvalidCastException($"Некорректная специализация: {stringValue}");
+                    }
+                }
+                else
+                {
+                    throw new InvalidCastException("Некорректный тип специализации");
+                }
+
+                // Создаем обновленного работника
+                UpdatedWorker = new Worker
+                {
+                    Id = -1, // ID будет установлен позже
+                    Name = change_name.Text,
+                    Age = int.Parse(change_age.Text),
+                    Salary = int.Parse(change_salary.Text),
+                    Specialization = specialization
+                };
+
+                // ВЫЗЫВАЕМ СОБЫТИЕ
                 Changed?.Invoke(this, EventArgs.Empty);
 
-                MessageBox.Show("Изменения прошли успешно");
-
+                DialogResult = DialogResult.OK;
                 this.Close();
-
             }
-            catch (Exception) 
+            catch (Exception ex)
             {
-                MessageBox.Show("Одно из полей содержит некорректное значение ");
+                MessageBox.Show($"Ошибка при обработке данных: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private bool ValidateInput()
+        {
+            // Используем внешнюю валидацию если есть, иначе свою
+            if (ValidateData != null)
+            {
+                return ValidateData(change_name.Text, change_age.Text, change_salary.Text);
+            }
+            else
+            {
+                // Простая валидация UI
+                if (string.IsNullOrWhiteSpace(change_name.Text))
+                {
+                    MessageBox.Show("Имя не может быть пустым", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+
+                if (!int.TryParse(change_age.Text, out int age) || age < 18 || age > 65)
+                {
+                    MessageBox.Show("Возраст должен быть числом от 18 до 65", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+
+                if (!int.TryParse(change_salary.Text, out int salary) || salary < 25000 || salary > 1000000)
+                {
+                    MessageBox.Show("Зарплата должна быть числом от 25000 до 1000000", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+
+                if (change_specialization.SelectedItem == null)
+                {
+                    MessageBox.Show("Выберите специализацию", "Ошибка",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            this.Close();
         }
     }
 }

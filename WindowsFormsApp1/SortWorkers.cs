@@ -1,88 +1,114 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Runtime.Versioning;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using BusinessLogical;
 using Model;
 
 namespace WindowsFormsApp1
 {
-    /// <summary>
-    /// Форма для сортировки работника по определенным критериям
-    /// </summary>
     public partial class SortWorkers : Form
     {
-        /// <summary>
-        /// Имя пользователя
-        /// </summary>
-        public string fname;
-        /// <summary>
-        /// Начальный возраст
-        /// </summary>
-        public int? sage;
-        /// <summary>
-        /// Конечный возраст
-        /// </summary>
-        public int? eage;
-        /// <summary>
-        /// Начальная зарплата
-        /// </summary>
-        public int? ssalary;
-        /// <summary>
-        /// Конечная зарплата
-        /// </summary>
-        public int? esalary;
-        /// <summary>
-        /// Специализация
-        /// </summary>
-        public Specialization? spec;
+        // Свойства для хранения критериев фильтрации
+        public string WorkerName { get; private set; }
+        public int? MinAge { get; private set; }
+        public int? MaxAge { get; private set; }
+        public int? MinSalary { get; private set; }
+        public int? MaxSalary { get; private set; }
+        public Specialization? Specialization { get; private set; }
 
-        
-        /// <summary>
-        /// Иницилизация компонентов формы и заполнение возможных специализаций
-        /// </summary>
+        // ДОБАВЬТЕ ЭТИ СВОЙСТВА ДЛЯ ДОСТУПА ИЗ ВНЕ
+        public string fname => WorkerName;
+        public int? sage => MinAge;
+        public int? eage => MaxAge;
+        public int? ssalary => MinSalary;
+        public int? esalary => MaxSalary;
+        public Specialization? spec => Specialization;
+
+        // ДОБАВЬТЕ ЭТО СОБЫТИЕ
+        public event EventHandler Sort;
+
         public SortWorkers()
         {
             InitializeComponent();
-            var specializations = new List<object> { "Не выбрано" };
-            specializations.AddRange(Enum.GetValues(typeof(Specialization)).Cast<object>());
-            fspecialization.DataSource = specializations;
+            InitializeSpecializationComboBox();
         }
 
+        private void InitializeSpecializationComboBox()
+        {
+            // Добавляем "Не выбрано" и все значения перечисления
+            var items = new List<object> { "Не выбрано" };
 
-        public event EventHandler Sort;
+            // ИСПРАВЛЕНО: преобразуем Array в IEnumerable<object>
+            var enumValues = Enum.GetValues(typeof(Specialization));
+            foreach (var value in enumValues)
+            {
+                items.Add(value);
+            }
+
+            fspecialization.DataSource = items;
+        }
+
         private void sort_Click(object sender, EventArgs e)
         {
-            try
+            // Собираем данные из формы
+            WorkerName = string.IsNullOrWhiteSpace(find_name.Text) ? null : find_name.Text;
+
+            MinAge = int.TryParse(start_age.Text, out int minAge) ? minAge : (int?)null;
+            MaxAge = int.TryParse(end_age.Text, out int maxAge) ? maxAge : (int?)null;
+            MinSalary = int.TryParse(start_salary.Text, out int minSalary) ? minSalary : (int?)null;
+            MaxSalary = int.TryParse(last_salary.Text, out int maxSalary) ? maxSalary : (int?)null;
+
+            // ИСПРАВЛЕНО: правильная конвертация выбранного значения
+            if (fspecialization.SelectedItem != null &&
+                fspecialization.SelectedItem.ToString() != "Не выбрано")
             {
-                fname = string.IsNullOrEmpty(find_name.Text) ? null : find_name.Text;
-
-
-                sage = int.TryParse(start_age.Text, out int minAge) ? minAge : (int?)null;
-                eage = int.TryParse(end_age.Text, out int maxAge) ? maxAge : (int?)null;
-                ssalary = int.TryParse(start_salary.Text, out int minSalary) ? minSalary : (int?)null;
-                esalary = int.TryParse(last_salary.Text, out int maxSalary) ? maxSalary : (int?)null;
-
-                spec = fspecialization.SelectedItem?.ToString() != "Не выбрано"
-                   ? (Specialization?)fspecialization.SelectedItem
-                   : null;
-
-
-                Sort?.Invoke(this, EventArgs.Empty);
-                this.Close();
+                if (fspecialization.SelectedItem is Specialization spec)
+                {
+                    Specialization = spec;
+                }
+                else if (fspecialization.SelectedItem is string specStr)
+                {
+                    if (Enum.TryParse<Specialization>(specStr, true, out Specialization parsedSpec))
+                    {
+                        Specialization = parsedSpec;
+                    }
+                    else
+                    {
+                        Specialization = null;
+                    }
+                }
+                else
+                {
+                    Specialization = null;
+                }
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show($"Ошибка ввода данных: {ex.Message}");
+                Specialization = null;
             }
 
+            // ВЫЗЫВАЕМ СОБЫТИЕ
+            Sort?.Invoke(this, EventArgs.Empty);
+
+            DialogResult = DialogResult.OK;
+            this.Close();
+        }
+
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            // Очищаем все поля
+            find_name.Text = "";
+            start_age.Text = "";
+            end_age.Text = "";
+            start_salary.Text = "";
+            last_salary.Text = "";
+            fspecialization.SelectedIndex = 0;
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            this.Close();
         }
     }
 }

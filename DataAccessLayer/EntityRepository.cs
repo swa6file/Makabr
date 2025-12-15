@@ -15,7 +15,7 @@ namespace DataAccessLayer
         /// <summary>
         /// Создает новый репозиторий для работы с Entity Framework
         /// </summary>
-        /// <param name="connectionString">Строка подключения к базе данных (необязательный)</param>
+        /// <param name="connectionString">Строка подключения к базе данных</param>
         public EntityRepository(string connectionString = null)
         {
             if (!string.IsNullOrEmpty(connectionString))
