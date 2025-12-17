@@ -14,7 +14,7 @@ namespace Model
         /// <summary>
         /// Электрик
         /// </summary>
-        Eletrecian = 1,
+        Eleсtrecian = 1,
         /// <summary>
         /// Маляр
         /// </summary>

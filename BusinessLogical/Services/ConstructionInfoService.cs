@@ -22,7 +22,7 @@ namespace BusinessLogical.Services
             return new ConstructionInfo
             {
                 TotalSalaryExpenses = workers.Sum(w => w.Salary),
-                ElectriciansCount = workers.Count(w => w.Specialization == Specialization.Eletrecian),
+                ElectriciansCount = workers.Count(w => w.Specialization == Specialization.Eleсtrecian),
                 PaintersCount = workers.Count(w => w.Specialization == Specialization.Painter),
                 CraneOperatorsCount = workers.Count(w => w.Specialization == Specialization.CraneOperator),
                 GeneralWorkersCount = workers.Count(w => w.Specialization == Specialization.GeneralWorker)

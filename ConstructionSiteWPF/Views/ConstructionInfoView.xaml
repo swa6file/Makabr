@@ -1,0 +1,111 @@
+﻿<Window x:Class="ConstructionSiteWPF.Views.ConstructionInfoView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Информация о строительной площадке" 
+        Height="500" 
+        Width="400"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Closing="Window_Closing">
+    <!-- Добавляем обработчик закрытия -->
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <TextBlock Grid.Row="0" 
+                   Text="Статистика строительной площадки" 
+                   FontSize="20"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Margin="0 0 0 30"/>
+
+        <!-- Информация -->
+        <Border Grid.Row="1" 
+                BorderBrush="#CCCCCC" 
+                BorderThickness="1"
+                CornerRadius="5"
+                Padding="20">
+
+            <StackPanel>
+                <!-- Общие расходы -->
+                <Border Background="#F8F8F8" 
+                        CornerRadius="3"
+                        Padding="10"
+                        Margin="0 0 0 10">
+                    <TextBlock>
+                        <Run Text="Общие расходы на зарплаты:" 
+                             FontWeight="Bold"/>
+                        <LineBreak/>
+                        <Run Text="{Binding Info.TotalSalaryExpenses, StringFormat={}{0:N0} руб.}" 
+                             FontSize="16"
+                             Foreground="#2E7D32"/>
+                    </TextBlock>
+                </Border>
+
+                <!-- Специализации -->
+                <StackPanel Margin="0 10 0 0">
+                    <TextBlock Text="Количество по специализациям:" 
+                               FontWeight="Bold"
+                               Margin="0 0 0 10"/>
+
+                    <StackPanel>
+                        <TextBlock Margin="0 0 0 5">
+                            <Run Text="Электрики:" 
+                                 Foreground="#2196F3"/>
+                            <Run Text="{Binding Info.ElectriciansCount}"/>
+                        </TextBlock>
+
+                        <TextBlock Margin="0 0 0 5">
+                            <Run Text="Маляры:" 
+                                 Foreground="#FF9800"/>
+                            <Run Text="{Binding Info.PaintersCount}"/>
+                        </TextBlock>
+
+                        <TextBlock Margin="0 0 0 5">
+                            <Run Text="Крановщики:" 
+                                 Foreground="#9C27B0"/>
+                            <Run Text="{Binding Info.CraneOperatorsCount}"/>
+                        </TextBlock>
+
+                        <TextBlock Margin="0 0 0 5">
+                            <Run Text="Разнорабочие:" 
+                                 Foreground="#4CAF50"/>
+                            <Run Text="{Binding Info.GeneralWorkersCount}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Итого -->
+                <Border Background="#E3F2FD" 
+                        CornerRadius="3"
+                        Padding="10"
+                        Margin="0 20 0 0">
+                    <TextBlock>
+                        <Run Text="Всего работников:" 
+                             FontWeight="Bold"/>
+                        <LineBreak/>
+                        <Run Text="{Binding TotalWorkers}" 
+                             FontSize="16"/>
+                    </TextBlock>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <!-- Кнопка закрытия -->
+        <Button Grid.Row="2" 
+                Content="Закрыть" 
+                HorizontalAlignment="Right"
+                Width="100"
+                Margin="0 20 0 0"
+                Click="CloseButton_Click"/>
+
+    </Grid>
+</Window>
